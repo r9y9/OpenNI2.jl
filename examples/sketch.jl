@@ -56,6 +56,8 @@ while true
         @show fname
         cv2.imwrite(fname, cv2.Mat(scaledarr))
     end
+
+    rand() > 0.9 && gc(false)
 end
 
 ni2.stop(depth)

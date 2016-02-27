@@ -16,7 +16,6 @@ end
 Libdl.dlopen(libOpenNI2, Libdl.RTLD_GLOBAL)
 
 ni2_header_path = replace(dirname(libOpenNI2), "/lib\/ni2", "/include\/ni2")
-@show ni2_header_path
 addHeaderDir(ni2_header_path, kind=C_System)
 
 cxx"""
@@ -73,7 +72,7 @@ end
     if rc != STATUS_OK
         error("[OpenNI error (code: $(rc.val))]:\n$(getExtendedError())")
     end
-    rc.val
+    rc
 end
 
 function initialize()

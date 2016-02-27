@@ -4,8 +4,20 @@ using Cxx
 
 import Base: open, close, start
 
-Libdl.dlopen("/usr/local/lib/ni2/libOpenNI2.dylib", Libdl.RTLD_GLOBAL)
-addHeaderDir("/usr/local/include/ni2/", kind=C_System)
+using BinDeps
+
+# Load required dependency
+deps = joinpath(Pkg.dir("OpenNI2"), "deps", "deps.jl")
+if isfile(deps)
+    include(deps)
+else
+    error("OpenNI2 not properly installed. Please run Pkg.build(\"OpenNI2\")")
+end
+Libdl.dlopen(libOpenNI2, Libdl.RTLD_GLOBAL)
+
+ni2_header_path = replace(dirname(libOpenNI2), "/lib\/ni2", "/include\/ni2")
+@show ni2_header_path
+addHeaderDir(ni2_header_path, kind=C_System)
 
 cxx"""
 #include <memory>

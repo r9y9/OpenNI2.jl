@@ -2,6 +2,7 @@
 
 A Julia interface for OpenNI2. Currently only tested on osx 10.10.4.
 
+<div align="center"><img src="test/test_juliatokyo.gif"></div>
 
 ## Dependencies
 

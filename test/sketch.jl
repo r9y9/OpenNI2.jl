@@ -14,11 +14,15 @@ const h = 480
 const pxfmt = ni2.PIXEL_FORMAT_DEPTH_1_MM
 
 ni2.initialize()
-device = ni2.OpenNIDevice()
+device = ni2.DevicePtr()
 ni2.open(device)
 ni2.setDepthColorSyncEnabled(device, false)
 
-depth = ni2.VideoStream()
+di = ni2.getDeviceInfo(device)
+@show di
+@show ni2.getName(di)
+
+depth = ni2.VideoStreamPtr()
 ni2.create(depth, device, ni2.SENSOR_DEPTH)
 ni2.setMirroringEnabled(depth, true)
 

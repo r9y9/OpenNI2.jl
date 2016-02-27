@@ -23,6 +23,8 @@ cxx"""
 #include <OpenNI.h>
 """
 
+typealias StdSharedPtr{T} cxxt"std::shared_ptr<$T>"
+
 ### Enums ###
 
 for name in [
@@ -63,6 +65,7 @@ for name in [
 end
 
 const ANY_DEVICE = icxx"openni::ANY_DEVICE;"
+const SensorType = Cxx.CppEnum{symbol("openni::SensorType"),UInt32}
 
 function getExtendedError()
     icxx"openni::OpenNI::getExtendedError();" |> bytestring
@@ -82,61 +85,34 @@ end
 
 shutdown() = icxx"openni::OpenNI::shutdown();"
 
-### Device ###
 
-type OpenNIDevice{T}
+### DeviceInfo ###
+
+type DeviceInfo{T}
     handle::T
 end
 
-function (::Type{OpenNIDevice})()
-    handle =  icxx"std::shared_ptr<openni::Device>(new openni::Device);"
-    OpenNIDevice(handle)
-end
-
-function open(device::OpenNIDevice, deviceURI=ANY_DEVICE)
-    rc = icxx"$(device.handle)->open($deviceURI);"
-    checkStatus(rc)
+for f in [
+    :getUri,
+    :getVendor,
+    :getName,
+    ]
+    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(di.handle).$f();")
+    @eval $f(di::DeviceInfo) = $ex |> bytestring
 end
 
 for f in [
-    :setDepthColorSyncEnabled,
+    :getUsbVendorId,
+    :getUsbProductId,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(device.handle)->$f(\$v);")
-    @eval begin
-        function $f(device::OpenNIDevice, v)
-            rc = $ex
-            checkStatus(rc)
-        end
-    end
+    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(di.handle).$f();")
+
+    @eval $f(di::DeviceInfo) = $ex
 end
-
-for f in [
-    :close,
-    :getDeviceInfo,
-    :isValid,
-    :isFile,
-    :getDepthColorSyncEnabled,
-    ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(device.handle)->$f();")
-    @eval $f(device::OpenNIDevice) = $ex
-end
-
-const SensorType = Cxx.CppEnum{symbol("openni::SensorType"),UInt32}
-
-function hasSensor(device::OpenNIDevice, sensorType::SensorType)
-    icxx"$(device.handle)->hasSensor($sensorType);"
-end
-
-function getSensorInfo(device::OpenNIDevice, sensorType::SensorType)
-    handle = icxx"$(device.handle)->getSensorInfo($sensorType);"
-    @assert isa(handle, Cxx.CppPtr)
-    SensorInfoPtr(handle)
-end
-
 
 ### SensorInfo ###
 
-# stram->getSensorInfo() return a const reference
+# stream->getSensorInfo() return a const reference
 type SensorInfo{T}
     handle::T
 end
@@ -149,7 +125,62 @@ end
 getSensorType(si::SensorInfo) = icxx"$(si.handle).getSensorType();"
 getSensorType(si::SensorInfoPtr) = icxx"$(si.handle)->getSensorType();"
 
-# workaround
+
+### Device ###
+
+type DevicePtr{T<:StdSharedPtr}
+    handle::T
+end
+
+function (::Type{DevicePtr})()
+    handle =  icxx"std::shared_ptr<openni::Device>(new openni::Device);"
+    DevicePtr(handle)
+end
+
+function open(device::DevicePtr, deviceURI=ANY_DEVICE)
+    rc = icxx"$(device.handle)->open($deviceURI);"
+    checkStatus(rc)
+end
+
+for f in [
+    :setDepthColorSyncEnabled,
+    ]
+    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(device.handle)->$f(\$v);")
+    @eval begin
+        function $f(device::DevicePtr, v)
+            rc = $ex
+            checkStatus(rc)
+        end
+    end
+end
+
+for f in [
+    :close,
+    :isValid,
+    :isFile,
+    :getDepthColorSyncEnabled,
+    ]
+    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(device.handle)->$f();")
+    @eval $f(device::DevicePtr) = $ex
+end
+
+function hasSensor(device::DevicePtr, sensorType::SensorType)
+    icxx"$(device.handle)->hasSensor($sensorType);"
+end
+
+function getDeviceInfo(device::DevicePtr)
+    handle = icxx"$(device.handle)->getDeviceInfo();"
+    @assert isa(handle, Cxx.CppRef)
+    DeviceInfo(handle)
+end
+
+function getSensorInfo(device::DevicePtr, sensorType::SensorType)
+    handle = icxx"$(device.handle)->getSensorInfo($sensorType);"
+    @assert isa(handle, Cxx.CppPtr)
+    SensorInfoPtr(handle)
+end
+
+# workaround to dispatch on openni::Array<T>
 type SupportedVideoModes{T}
     handle::T
 end
@@ -173,16 +204,16 @@ Base.length(ar::SupportedVideoModes) = icxx"$(ar.handle).getSize();"
 
 ### VideoStream ###
 
-type VideoStream{T}
+type VideoStreamPtr{T<:StdSharedPtr}
     handle::T
 end
 
-function (::Type{VideoStream})()
+function (::Type{VideoStreamPtr})()
     handle = icxx"std::shared_ptr<openni::VideoStream>(new openni::VideoStream);"
-    VideoStream(handle)
+    VideoStreamPtr(handle)
 end
 
-function create(stream::VideoStream, device::OpenNIDevice,
+function create(stream::VideoStreamPtr, device::DevicePtr,
         typ::Cxx.CppEnum=SENSOR_DEPTH)
     rc = icxx"$(stream.handle)->create(*$(device.handle), $typ);"
     checkStatus(rc)
@@ -194,7 +225,7 @@ for f in [
     ]
     ex = Expr(:macrocall, symbol("@icxx_str"), "\$(stream.handle)->$f(\$v);")
     @eval begin
-        function $f(stream::VideoStream, v)
+        function $f(stream::VideoStreamPtr, v)
             rc = $ex
             checkStatus(rc)
         end
@@ -204,7 +235,7 @@ end
 for f in [:start, :resetCropping]
     ex = Expr(:macrocall, symbol("@icxx_str"), "\$(stream.handle)->$f();")
     @eval begin
-        function $f(stream::VideoStream)
+        function $f(stream::VideoStreamPtr)
             rc = $ex
             checkStatus(rc)
         end
@@ -224,10 +255,10 @@ for f in [
     :getVerticalFieldOfView,
     ]
     ex = Expr(:macrocall, symbol("@icxx_str"), "\$(stream.handle)->$f();")
-    @eval $f(stream::VideoStream) = $ex
+    @eval $f(stream::VideoStreamPtr) = $ex
 end
 
-function getSensorInfo(stream::VideoStream)
+function getSensorInfo(stream::VideoStreamPtr)
     handle = icxx"$(stream.handle)->getSensorInfo();"
     SensorInfo(handle)
 end
@@ -274,7 +305,7 @@ function (::Type{VideoFrameRef})()
     VideoFrameRef(handle)
 end
 
-function readFrame(stream::VideoStream, frameRef)
+function readFrame(stream::VideoStreamPtr, frameRef)
     rc = icxx"$(stream.handle)->readFrame(&$(frameRef.handle));"
     checkStatus(rc)
 end

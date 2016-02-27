@@ -19,8 +19,8 @@ ni2.open(device)
 ni2.setDepthColorSyncEnabled(device, false)
 
 di = ni2.getDeviceInfo(device)
-@show di
 @show ni2.getName(di)
+@show ni2.getVendor(di)
 
 depth = ni2.VideoStreamPtr()
 ni2.create(depth, device, ni2.SENSOR_DEPTH)
@@ -64,8 +64,8 @@ while true
     rand() > 0.9 && gc(false)
 end
 
+cv2.destroyAllWindows()
+
 ni2.stop(depth)
 ni2.close(device)
 ni2.shutdown()
-
-cv2.destroyAllWindows()

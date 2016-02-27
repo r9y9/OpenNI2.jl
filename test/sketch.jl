@@ -25,6 +25,7 @@ di = ni2.getDeviceInfo(device)
 depth = ni2.VideoStreamPtr()
 ni2.create(depth, device, ni2.SENSOR_DEPTH)
 ni2.setMirroringEnabled(depth, true)
+ni2.setImageRegistrationMode(device, ni2.IMAGE_REGISTRATION_OFF)
 
 modes = ni2.getSupportedVideoModes(ni2.getSensorInfo(device, ni2.SENSOR_DEPTH))
 for mode in modes
@@ -44,7 +45,7 @@ frame = ni2.VideoFrameRef()
 while true
     ni2.waitForAnyStream([depth])
     ni2.readFrame(depth, frame)
-    arr = convert(Array{Cushort,2}, frame)
+    arr = convert(Array{ni2.DepthPixel,2}, frame)
     @assert size(arr) == (w, h)
 
     # [0,1]
@@ -67,5 +68,8 @@ end
 cv2.destroyAllWindows()
 
 ni2.stop(depth)
+ni2.destroy(depth)
 ni2.close(device)
 ni2.shutdown()
+
+gc()

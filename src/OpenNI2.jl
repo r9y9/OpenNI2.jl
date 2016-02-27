@@ -26,6 +26,10 @@ cxx"""
 
 typealias StdSharedPtr{T} cxxt"std::shared_ptr<$T>"
 
+typealias DepthPixel cxxt"openni::DepthPixel" # uint16_t
+typealias Grayscale16Pixel cxxt"openni::Grayscale16Pixel" # uint16_t
+typealias RGB888Pixel cxxt"openni::RGB888Pixel" # struct
+
 ### Enums ###
 
 for name in [
@@ -67,10 +71,8 @@ end
 
 const ANY_DEVICE = icxx"openni::ANY_DEVICE;"
 const SensorType = Cxx.CppEnum{symbol("openni::SensorType"),UInt32}
-
-function getExtendedError()
-    icxx"openni::OpenNI::getExtendedError();" |> bytestring
-end
+const ImageRegistrationMode =
+    Cxx.CppEnum{symbol("openni::ImageRegistrationMode"),UInt32}
 
 @inline function checkStatus(rc)
     if rc != STATUS_OK
@@ -79,13 +81,27 @@ end
     rc
 end
 
+### OpenNI ###
+
 function initialize()
     rc = icxx"openni::OpenNI::initialize();"
     checkStatus(rc)
 end
-
 shutdown() = icxx"openni::OpenNI::shutdown();"
+getVersion() = icxx"openni::OpenNI::getVersion();"
+function getExtendedError()
+    icxx"openni::OpenNI::getExtendedError();" |> bytestring
+end
 
+# Julia-friendly getVersion
+function getVersionNumber()
+    version = getVersion()
+    major = icxx"$version.major;"
+    minor = icxx"$version.minor;"
+    maintenance = icxx"$version.maintenance;"
+    build = icxx"$version.build;"
+    convert(VersionNumber, "$major.$minor.$maintenance-$build")
+end
 
 ### DeviceInfo ###
 
@@ -157,6 +173,7 @@ end
 
 for f in [
     :close,
+    :getImageRegistrationMode,
     :isValid,
     :isFile,
     :getDepthColorSyncEnabled,
@@ -179,6 +196,17 @@ function getSensorInfo(device::DevicePtr, sensorType::SensorType)
     handle = icxx"$(device.handle)->getSensorInfo($sensorType);"
     @assert isa(handle, Cxx.CppPtr)
     SensorInfoPtr(handle)
+end
+
+function isImageRegistrationModeSupported(device::DevicePtr,
+        mode::ImageRegistrationMode)
+    icxx"$(device.handle)->isImageRegistrationModeSupported($mode);"
+end
+
+function setImageRegistrationMode(device::DevicePtr,
+        mode::ImageRegistrationMode)
+    rc = icxx"$(device.handle)->setImageRegistrationMode($mode);"
+    checkStatus(rc)
 end
 
 # workaround to dispatch on openni::Array<T>

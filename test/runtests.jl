@@ -4,7 +4,12 @@ using Base.Test
 
 const ni2 = OpenNI2
 
-@testset "basics" begin
+@testset "Version" begin
+    ver = ni2.getVersionNumber()
+    @test ver >= v"2.2.0-"
+end
+
+@testset "Basics" begin
     ni2.initialize()
     device = ni2.DevicePtr()
     @test ni2.open(device) == ni2.STATUS_OK
@@ -14,6 +19,9 @@ const ni2 = OpenNI2
     depth = ni2.VideoStreamPtr()
     @test ni2.create(depth, device, ni2.SENSOR_DEPTH) == ni2.STATUS_OK
     @test ni2.isValid(device)
+
+    rc = ni2.setImageRegistrationMode(device, ni2.IMAGE_REGISTRATION_OFF)
+    @test rc == ni2.STATUS_OK
 
     mode = ni2.getVideoMode(depth)
     w, h = ni2.getResolutionX(mode), ni2.getResolutionY(mode)

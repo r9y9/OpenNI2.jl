@@ -214,7 +214,7 @@ function (::Type{VideoStreamPtr})()
 end
 
 function create(stream::VideoStreamPtr, device::DevicePtr,
-        typ::Cxx.CppEnum=SENSOR_DEPTH)
+        typ::SensorType=SENSOR_DEPTH)
     rc = icxx"$(stream.handle)->create(*$(device.handle), $typ);"
     checkStatus(rc)
 end

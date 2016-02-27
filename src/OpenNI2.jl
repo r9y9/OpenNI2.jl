@@ -1,7 +1,5 @@
 module OpenNI2
 
-using Cxx
-
 import Base: open, close, start
 
 using BinDeps
@@ -13,6 +11,9 @@ if isfile(deps)
 else
     error("OpenNI2 not properly installed. Please run Pkg.build(\"OpenNI2\")")
 end
+
+using Cxx
+
 Libdl.dlopen(libOpenNI2, Libdl.RTLD_GLOBAL)
 
 ni2_header_path = replace(dirname(libOpenNI2), "/lib\/ni2", "/include\/ni2")

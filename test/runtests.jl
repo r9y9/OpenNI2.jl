@@ -29,7 +29,7 @@ end
     @test ni2.start(depth) == ni2.STATUS_OK
     frame = ni2.VideoFrameRef()
     @test !ni2.isValid(frame)
-    ni2.waitForAnyStream([depth])
+    @test ni2.waitForAnyStream([depth]) == 0
     ni2.readFrame(depth, frame)
     @test ni2.isValid(frame)
     arr = convert(Array{Cushort,2}, frame)
@@ -89,7 +89,7 @@ end
 
     @test ni2.start(depth) == ni2.STATUS_OK
     frame = ni2.VideoFrameRef()
-    ni2.waitForAnyStream([depth])
+    @test ni2.waitForAnyStream([depth]) == 0
     ni2.readFrame(depth, frame)
     arr = convert(Array{Cushort,2}, frame)
     @test size(arr) == (w, h)

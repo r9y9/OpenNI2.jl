@@ -70,6 +70,7 @@ for name in [
 end
 
 const ANY_DEVICE = icxx"openni::ANY_DEVICE;"
+const TIMEOUT_FOREVER = icxx"openni::TIMEOUT_FOREVER;"
 const SensorType = Cxx.CppEnum{symbol("openni::SensorType"),UInt32}
 const ImageRegistrationMode =
     Cxx.CppEnum{symbol("openni::ImageRegistrationMode"),UInt32}
@@ -307,20 +308,21 @@ for f in [
     @eval $f(videoMode::VideoModeValOrRef) = $ex
 end
 
-function waitForAnyStream(streams)
+function waitForAnyStream(streams; timeout::Cint=TIMEOUT_FOREVER)
     raw_streams = pcpp"openni::VideoStream"[]
     for s in streams
         push!(raw_streams, icxx"$(s.handle).get();")
     end
 
-    # TODO:
-    changedIndex = Cint[1]
+    readyStreamIndex = Cint[1]
     rc = icxx"""
     openni::OpenNI::waitForAnyStream($(pointer(raw_streams)),
-        $(length(streams)),
-        $(pointer(changedIndex)));
+        $(length(raw_streams)),
+        $(pointer(readyStreamIndex)),
+        $timeout);
     """
     checkStatus(rc)
+    readyStreamIndex[1]
 end
 
 ### VideoFrameRef ###
@@ -364,7 +366,13 @@ function Base.convert{T,N}(::Type{Array{T,N}}, frame::VideoFrameRef)
     w = Int(getResolutionX(mode))
     h = Int(getResolutionY(mode))
     ar = pointer_to_array(convert(Ptr{T}, getData(frame)), w * h)
-    reshape(ar, w, h)
+    if N == 1
+        return ar
+    elseif N == 2
+        return reshape(ar, w, h)
+    else
+        error("N <= 2 is supported")
+    end
 end
 
 end # module

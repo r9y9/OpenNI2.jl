@@ -35,6 +35,7 @@ end
     arr = convert(Array{Cushort,2}, frame)
     @test size(arr) == (w, h)
     ni2.stop(depth)
+    ni2.destroy(depth)
 
     ni2.close(device)
     ni2.shutdown()
@@ -94,6 +95,7 @@ end
     arr = convert(Array{Cushort,2}, frame)
     @test size(arr) == (w, h)
     ni2.stop(depth)
+    ni2.destroy(depth)
 
     ni2.close(device)
     ni2.shutdown()

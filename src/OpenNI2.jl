@@ -1,3 +1,4 @@
+__precompile__(false)
 module OpenNI2
 
 import Base: open, close, start
@@ -373,6 +374,16 @@ function Base.convert{T,N}(::Type{Array{T,N}}, frame::VideoFrameRef)
     else
         error("N <= 2 is supported")
     end
+end
+
+### Nite ###
+
+# TODO: to be configurable
+const libNiTE2 = Pkg.dir("OpenNI2", "deps", "NiTE", "Redist", "libNiTE2.dylib")
+if isfile(libNiTE2)
+    export NiTE
+    info("Enable NiTE support")
+    include("NiTE.jl")
 end
 
 end # module

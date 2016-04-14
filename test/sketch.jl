@@ -8,11 +8,19 @@ isesc(key) = key == 27
 genfilename(ext=".png") =
     joinpath(dirname(@__FILE__), string(now(), "_", time_ns(), ext))
 
+# Turn this on if you prefer to use Kinect v2
+# assumed that libfreenect2-openni2 driver is installed
+use_libfreenect2_openni2_driver = false
+
 always_save = false
 show_ir = true
 show_depth = true
-w = 640>>1
-h = 480>>1
+
+if use_libfreenect2_openni2_driver
+    w, h = 640, 480
+else
+    w, h = 640>>1, 480>>1
+end
 
 function setVideoMode(stream, si, w, h, pxfmt)
     modes = ni2.getSupportedVideoModes(si)
@@ -41,17 +49,23 @@ di = ni2.getDeviceInfo(device)
 
 depth = ni2.VideoStreamPtr()
 ni2.create(depth, device, ni2.SENSOR_DEPTH)
-ni2.setMirroringEnabled(depth, true)
-setVideoMode(depth, ni2.getSensorInfo(device, ni2.SENSOR_DEPTH), w, h,
-    ni2.PIXEL_FORMAT_DEPTH_1_MM)
+if !use_libfreenect2_openni2_driver
+    ni2.setMirroringEnabled(depth, true)
+    setVideoMode(depth, ni2.getSensorInfo(device, ni2.SENSOR_DEPTH), w, h,
+        ni2.PIXEL_FORMAT_DEPTH_1_MM)
+end
 
 ir = ni2.VideoStreamPtr()
 ni2.create(ir, device, ni2.SENSOR_IR)
-ni2.setMirroringEnabled(ir, true)
-setVideoMode(ir, ni2.getSensorInfo(device, ni2.SENSOR_IR), w, h,
-    ni2.PIXEL_FORMAT_GRAY16)
+if !use_libfreenect2_openni2_driver
+    ni2.setMirroringEnabled(ir, true)
+    setVideoMode(ir, ni2.getSensorInfo(device, ni2.SENSOR_IR), w, h,
+        ni2.PIXEL_FORMAT_GRAY16)
+end
 
-ni2.setImageRegistrationMode(device, ni2.IMAGE_REGISTRATION_OFF)
+if !use_libfreenect2_openni2_driver
+    ni2.setImageRegistrationMode(device, ni2.IMAGE_REGISTRATION_OFF)
+end
 
 foreach(ni2.start, [depth, ir])
 
@@ -62,12 +76,12 @@ while true
     if readyIndex == 0
         ni2.readFrame(depth, frame)
         arr = convert(Array{ni2.DepthPixel,2}, frame)
-        scaledarr = scale(arr, 1/maximum(arr))
+        scaledarr = arr * 1/maximum(arr)
         show_depth && cv2.imshow("depth", scaledarr)
     elseif readyIndex == 1
         ni2.readFrame(ir, frame)
         arr = convert(Array{ni2.Grayscale16Pixel,2}, frame)
-        scaledarr = scale(arr, 1/maximum(arr))
+        scaledarr = arr * 1/maximum(arr)
         show_ir && cv2.imshow("ir", scaledarr)
     end
 
@@ -92,4 +106,5 @@ foreach(ni2.destroy, [depth, ir])
 ni2.close(device)
 ni2.shutdown()
 
-gc()
+# Force deallocate
+depth=0;ir=0;device=0;gc()

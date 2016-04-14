@@ -1,3 +1,7 @@
+!isfile("NiTE.ini") && error("""
+Cannot find NiTE.ini. Please change your directroy where NiTE.ini exists.
+""")
+
 using Cxx
 using OpenNI2
 using OpenCV
@@ -11,8 +15,6 @@ genfilename(ext=".png") =
 
 always_save = false
 show_depth = true
-w = 512
-h = 424
 
 ni2.initialize()
 device = ni2.DevicePtr()
@@ -116,4 +118,5 @@ ni2.close(device)
 nite.shutdown()
 ni2.shutdown()
 
-gc()
+# Force deallocate
+depth=0;user_frame=0;device=0;gc()

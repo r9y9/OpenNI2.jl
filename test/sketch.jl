@@ -17,7 +17,7 @@ show_ir = true
 show_depth = true
 
 if use_libfreenect2_openni2_driver
-    w, h = 640, 480
+    w, h = 512, 424
 else
     w, h = 640>>1, 480>>1
 end
@@ -49,23 +49,17 @@ di = ni2.getDeviceInfo(device)
 
 depth = ni2.VideoStreamPtr()
 ni2.create(depth, device, ni2.SENSOR_DEPTH)
-if !use_libfreenect2_openni2_driver
-    ni2.setMirroringEnabled(depth, true)
-    setVideoMode(depth, ni2.getSensorInfo(device, ni2.SENSOR_DEPTH), w, h,
-        ni2.PIXEL_FORMAT_DEPTH_1_MM)
-end
+!use_libfreenect2_openni2_driver && ni2.setMirroringEnabled(depth, true)
+setVideoMode(depth, ni2.getSensorInfo(device, ni2.SENSOR_DEPTH), w, h,
+    ni2.PIXEL_FORMAT_DEPTH_1_MM)
 
 ir = ni2.VideoStreamPtr()
 ni2.create(ir, device, ni2.SENSOR_IR)
-if !use_libfreenect2_openni2_driver
-    ni2.setMirroringEnabled(ir, true)
-    setVideoMode(ir, ni2.getSensorInfo(device, ni2.SENSOR_IR), w, h,
-        ni2.PIXEL_FORMAT_GRAY16)
-end
+!use_libfreenect2_openni2_driver && ni2.setMirroringEnabled(ir, true)
+setVideoMode(ir, ni2.getSensorInfo(device, ni2.SENSOR_IR), w, h,
+    ni2.PIXEL_FORMAT_GRAY16)
 
-if !use_libfreenect2_openni2_driver
-    ni2.setImageRegistrationMode(device, ni2.IMAGE_REGISTRATION_OFF)
-end
+ni2.setImageRegistrationMode(device, ni2.IMAGE_REGISTRATION_OFF)
 
 foreach(ni2.start, [depth, ir])
 

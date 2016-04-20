@@ -4,7 +4,8 @@ Cannot find NiTE.ini. Please change your directroy where NiTE.ini exists.
 
 using Cxx
 using OpenNI2
-using OpenCV
+using CVCore
+using CVHighGUI
 
 const ni2 = OpenNI2
 const nite = NiTE
@@ -62,7 +63,7 @@ while true
     end
 
     # For convenience
-    m = cv2.Mat(scaledarr)
+    m = Mat(scaledarr)
 
     for user in users
         nite.isLost(user) && continue
@@ -89,9 +90,9 @@ while true
             icxx"cv::circle($(m.handle), cv::Point($outX,$outY), 7, cv::Scalar(255,255,0));"
         end
     end
-    show_depth && cv2.imshow("depth", m)
+    show_depth && imshow("depth", m)
 
-    key = cv2.waitKey(delay=1)
+    key = waitKey(delay=1)
     isesc(key) && break
 
     if key == 's' || always_save
@@ -99,13 +100,13 @@ while true
         ext = readyIndex == 0 ? "_depth.png" : "_ir.png"
         fname = genfilename(ext)
         @show fname
-        cv2.imwrite(fname, cv2.Mat(scaledarr))
+        imwrite(fname, Mat(scaledarr))
     end
 
     rand() > 0.97 && gc(false)
 end
 
-cv2.destroyAllWindows()
+destroyAllWindows()
 
 nite.release(user_frame)
 nite.destroy(tracker)

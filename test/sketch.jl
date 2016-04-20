@@ -1,6 +1,7 @@
 using Cxx
 using OpenNI2
-using OpenCV
+using CVCore
+using CVHighGUI
 
 const ni2 = OpenNI2
 
@@ -71,15 +72,15 @@ while true
         ni2.readFrame(depth, frame)
         arr = convert(Array{ni2.DepthPixel,2}, frame)
         scaledarr = arr * 1/maximum(arr)
-        show_depth && cv2.imshow("depth", scaledarr)
+        show_depth && imshow("depth", scaledarr)
     elseif readyIndex == 1
         ni2.readFrame(ir, frame)
         arr = convert(Array{ni2.Grayscale16Pixel,2}, frame)
         scaledarr = arr * 1/maximum(arr)
-        show_ir && cv2.imshow("ir", scaledarr)
+        show_ir && imshow("ir", scaledarr)
     end
 
-    key = cv2.waitKey(delay=1)
+    key = waitKey(delay=1)
     isesc(key) && break
 
     if key == 's' || always_save
@@ -87,13 +88,13 @@ while true
         ext = readyIndex == 0 ? "_depth.png" : "_ir.png"
         fname = genfilename(ext)
         @show fname
-        cv2.imwrite(fname, cv2.Mat(scaledarr))
+        imwrite(fname, Mat(scaledarr))
     end
 
     rand() > 0.95 && gc(false)
 end
 
-cv2.destroyAllWindows()
+destroyAllWindows()
 
 foreach(ni2.stop, [depth, ir])
 foreach(ni2.destroy, [depth, ir])

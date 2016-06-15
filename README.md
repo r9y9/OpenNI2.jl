@@ -38,3 +38,38 @@ export OPENNI2_INCLUDE=/usr/local/include/ni2
 export OPENNI2_REDIST=/usr/local/lib/ni2
 export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${OPENNI2_REDIST}
 ```
+
+## NiTE
+
+Place NiTE binaries into deps directory so that the following directory structure are met:
+
+```
+% tree .
+
+.
+├── NiTE
+│   ├── Include
+│   │   ├── NiTE.h
+│   │   ├── NiteCAPI.h
+│   │   ├── NiteCEnums.h
+│   │   ├── NiteCTypes.h
+│   │   ├── NiteEnums.h
+│   │   └── NiteVersion.h
+│   └── Redist
+│       ├── NiTE.ini
+│       ├── NiTE2
+│       │   ├── Data
+│       │   │   ├── lbsdata.idx
+│       │   │   ├── lbsdata.lbd
+│       │   │   ├── lbsparam1.lbd
+│       │   │   └── lbsparam2.lbd
+│       │   ├── FeatureExtraction.ini
+│       │   ├── HandAlgorithms.ini
+│       │   ├── h.dat
+│       │   └── s.dat
+│       └── libNiTE2.dylib
+├── build.jl
+└── deps.jl
+
+5 directories, 18 files
+```

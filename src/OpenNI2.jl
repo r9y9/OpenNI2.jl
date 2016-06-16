@@ -1,8 +1,7 @@
 __precompile__(false)
 module OpenNI2
 
-import Base: open, close, start
-
+import Base: open, close, start, read, read!
 using BinDeps
 
 # Load required dependency
@@ -337,9 +336,16 @@ function (::Type{VideoFrameRef})()
     VideoFrameRef(handle)
 end
 
-function readFrame(stream::VideoStreamPtr, frameRef)
+function readFrame(stream::VideoStreamPtr, frameRef::VideoFrameRef)
     rc = icxx"$(stream.handle)->readFrame(&$(frameRef.handle));"
     checkStatus(rc)
+end
+function read!(stream::VideoStreamPtr, frameRef::VideoFrameRef)
+    readFrame(stream, frameRef)
+end
+function read(stream::VideoStreamPtr)
+    frame = VideoFrameRef()
+    read!(stream, frame)
 end
 
 for f in [

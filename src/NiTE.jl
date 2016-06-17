@@ -6,6 +6,8 @@ using Cxx
 import ..OpenNI2: libNiTE2
 Libdl.dlopen(libNiTE2, Libdl.RTLD_GLOBAL)
 
+import Base: read, read!
+
 nite_header_path = replace(dirname(libNiTE2), "\/Redist", "\/Include")
 @assert isdir(nite_header_path)
 addHeaderDir(nite_header_path, kind=C_System)
@@ -146,6 +148,13 @@ end
 function readFrame(tracker::UserTracker, frameRef::UserTrackerFrameRef)
     rc = icxx"$(tracker.handle).readFrame(&$(frameRef.handle));"
     checkStatus(rc)
+end
+function read!(tracker::UserTracker, frameRef::UserTrackerFrameRef)
+    readFrame(tracker, frameRef)
+end
+function read(tracker::UserTracker)
+    frame = UserTrackerFrameRef()
+    read!(tracker, frame)
 end
 
 typealias UserData Union{cxxt"nite::UserData", cxxt"nite::UserData&"}

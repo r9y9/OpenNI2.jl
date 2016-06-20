@@ -194,6 +194,9 @@ typealias Skeleton Union{cxxt"nite::Skeleton", cxxt"nite::Skeleton&"}
 function getJoint(s::Skeleton, typ)
     icxx"$s.getJoint($typ);"
 end
+function getJoint(s::Skeleton, typ::Integer)
+    icxx"$s.getJoint(static_cast<nite::JointType>($typ));"
+end
 
 getState(s::Skeleton) = icxx"$s.getState();"
 

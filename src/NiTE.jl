@@ -121,6 +121,28 @@ for f in [
     @eval $f(tracker::UserTracker, id) = $ex
 end
 
+### UserMap ###
+
+type UserMap{T}
+    handle::T
+end
+
+typealias UserId Int16 # short int
+
+for f in [
+    :getWidth,
+    :getHeight,
+    :getStride,
+    ]
+    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(umap.handle).$f();")
+    @eval $f(umap::UserMap) = $ex
+end
+
+function getPixels(umap::UserMap)
+    rawpixels = icxx"$(umap.handle).getPixels();"::Ptr{UserId}
+    unsafe_wrap(Array, rawpixels, getWidth(umap) * getHeight(umap))
+end
+
 ### UserTrackerFrameRef ###
 
 type UserTrackerFrameRef{T}
@@ -137,12 +159,15 @@ for f in [
     :getFloorConfidence,
     :getFloor,
     :getDepthFrame,
-    :getUserMap,
     :getTimestamp,
     :getFrameIndex,
     ]
     ex = Expr(:macrocall, symbol("@icxx_str"), "\$(frame.handle).$f();")
     @eval $f(frame::UserTrackerFrameRef) = $ex
+end
+
+function getUserMap(frame::UserTrackerFrameRef)
+    UserMap(icxx"$(frame.handle).getUserMap();")
 end
 
 function readFrame(tracker::UserTracker, frameRef::UserTrackerFrameRef)

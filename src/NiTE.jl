@@ -62,7 +62,7 @@ for name in [
     :GESTURE_HAND_RAISE,
     ]
     cppname = string("nite::", name)
-    ex = Expr(:macrocall, symbol("@icxx_str"), string(cppname, ";"))
+    ex = Expr(:macrocall, Symbol("@icxx_str"), string(cppname, ";"))
     @eval begin
         global const $name = $ex
         @assert isa($name, Cxx.CppEnum)
@@ -117,7 +117,7 @@ for f in [
     :startSkeletonTracking,
     :stopSkeletonTracking,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(tracker.handle).$f(\$id);")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(tracker.handle).$f(\$id);")
     @eval $f(tracker::UserTracker, id) = $ex
 end
 
@@ -134,7 +134,7 @@ for f in [
     :getHeight,
     :getStride,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(umap.handle).$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(umap.handle).$f();")
     @eval $f(umap::UserMap) = $ex
 end
 
@@ -162,7 +162,7 @@ for f in [
     :getTimestamp,
     :getFrameIndex,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(frame.handle).$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(frame.handle).$f();")
     @eval $f(frame::UserTrackerFrameRef) = $ex
 end
 
@@ -193,7 +193,7 @@ for f in [
     :isLost,
     :getSkeleton,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$user.$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$user.$f();")
     @eval $f(user::UserData) = $ex
 end
 
@@ -236,7 +236,7 @@ for f in [
     :getOrientation,
     :getOrientationConfidence,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$s.$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$s.$f();")
     @eval $f(s::SkeletonJoint) = $ex
 end
 

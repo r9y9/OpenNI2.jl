@@ -62,7 +62,7 @@ for name in [
     :IMAGE_REGISTRATION_DEPTH_TO_COLOR,
     ]
     cppname = string("openni::", name)
-    ex = Expr(:macrocall, symbol("@icxx_str"), string(cppname, ";"))
+    ex = Expr(:macrocall, Symbol("@icxx_str"), string(cppname, ";"))
     @eval begin
         global const $name = $ex
         @assert isa($name, Cxx.CppEnum)
@@ -71,9 +71,9 @@ end
 
 const ANY_DEVICE = icxx"openni::ANY_DEVICE;"
 const TIMEOUT_FOREVER = icxx"openni::TIMEOUT_FOREVER;"
-const SensorType = Cxx.CppEnum{symbol("openni::SensorType"),UInt32}
+const SensorType = Cxx.CppEnum{Symbol("openni::SensorType"),UInt32}
 const ImageRegistrationMode =
-    Cxx.CppEnum{symbol("openni::ImageRegistrationMode"),UInt32}
+    Cxx.CppEnum{Symbol("openni::ImageRegistrationMode"),UInt32}
 
 @inline function checkStatus(rc)
     if rc != STATUS_OK
@@ -115,7 +115,7 @@ for f in [
     :getVendor,
     :getName,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(di.handle).$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(di.handle).$f();")
     @eval $f(di::DeviceInfo) = $ex |> bytestring
 end
 
@@ -123,7 +123,7 @@ for f in [
     :getUsbVendorId,
     :getUsbProductId,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(di.handle).$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(di.handle).$f();")
 
     @eval $f(di::DeviceInfo) = $ex
 end
@@ -163,7 +163,7 @@ end
 for f in [
     :setDepthColorSyncEnabled,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(device.handle)->$f(\$v);")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(device.handle)->$f(\$v);")
     @eval begin
         function $f(device::DevicePtr, v)
             rc = $ex
@@ -179,7 +179,7 @@ for f in [
     :isFile,
     :getDepthColorSyncEnabled,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(device.handle)->$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(device.handle)->$f();")
     @eval $f(device::DevicePtr) = $ex
 end
 
@@ -253,7 +253,7 @@ for f in [
     :setVideoMode,
     :setMirroringEnabled,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(stream.handle)->$f(\$v);")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(stream.handle)->$f(\$v);")
     @eval begin
         function $f(stream::VideoStreamPtr, v)
             rc = $ex
@@ -263,7 +263,7 @@ for f in [
 end
 
 for f in [:start, :resetCropping]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(stream.handle)->$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(stream.handle)->$f();")
     @eval begin
         function $f(stream::VideoStreamPtr)
             rc = $ex
@@ -284,7 +284,7 @@ for f in [
     :getHorizontalFieldOfView,
     :getVerticalFieldOfView,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(stream.handle)->$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(stream.handle)->$f();")
     @eval $f(stream::VideoStreamPtr) = $ex
 end
 
@@ -304,7 +304,7 @@ for f in [
     :getResolutionY,
     :getFps,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(videoMode).$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(videoMode).$f();")
     @eval $f(videoMode::VideoModeValOrRef) = $ex
 end
 
@@ -364,7 +364,7 @@ for f in [
     :isValid,
     :release,
     ]
-    ex = Expr(:macrocall, symbol("@icxx_str"), "\$(frame.handle).$f();")
+    ex = Expr(:macrocall, Symbol("@icxx_str"), "\$(frame.handle).$f();")
     @eval $f(frame::VideoFrameRef) = $ex
 end
 
